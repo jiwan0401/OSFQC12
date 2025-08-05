@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSF Link - 오뚜기SF 품질플랫폼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none !important; }
+        .quiz-option.selected { background-color: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+        .quiz-option.correct { background-color: #dcfce7; border-color: #16a34a; color: #15803d; }
+        .quiz-option.wrong { background-color: #fef2f2; border-color: #dc2626; color: #dc2626; }
+        .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col justify-center items-center px-8">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-gradient-to-br from-slate-600 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                    <span class="text-white text-3xl">📚</span>
+                </div>
+                <h1 class="text-4xl font-bold text-slate-800 mb-2">OSF Link</h1>
+                <p class="text-slate-500">오뚜기SF 품질플랫폼</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+                <input
+                    id="employeeId"
+                    type="text"
+                    placeholder="사번"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-800 bg-white focus:border-blue-400 focus:outline-none transition-colors"
+                />
+                <input
+                    id="password"
+                    type="password"
+                    placeholder="패스워드"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-800 bg-white focus:border-blue-400 focus:outline-none transition-colors"
+                />
+                <button
+                    onclick="handleLogin()"
+                    class="w-full bg-gradient-to-r from-slate-600 to-blue-600 text-white py-3 rounded-xl hover:from-slate-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-[1.02]"
+                >
+                    로그인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 화면 -->
+    <div id="mainScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-6 px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-2xl">📚</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">OSF Link</h1>
+                        <p id="adminMode" class="text-sm text-white opacity-80 hidden">관리자 모드</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="saveAllBtn" onclick="saveAllFiles()" class="hidden bg-green-500 hover:bg-green-600 px-3 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                        <span class="text-lg">💾</span>
+                        <span class="text-sm">모두 저장</span>
+                    </button>
+                    <div id="notificationBell" class="hidden relative">
+                        <span class="text-2xl">🔔</span>
+                        <div class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                            <span class="text-xs text-white">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 gap-4">
+                <!-- 월별교육 -->
+                <div onclick="showScreen('education')" class="bg-white rounded-2xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center icon-box">
+                                <span class="text-blue-600">📅</span>
+                            </div>
+                            <div>
+                                <span class="text-lg font-semibold text-slate-800">월별교육</span>
+                                <p class="text-sm text-slate-500">교육과정 및 퀴즈</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <!-- 공지사항 -->
+                <div onclick="showScreen('notice')" class="bg-white rounded-2xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center icon-box">
+                                <span class="text-slate-600">📢</span>
+                            </div>
+                            <div>
+                                <span class="text-lg font-semibold text-slate-800">공지사항</span>
+                                <p class="text-sm text-slate-500">중요한 공지사항</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <!-- 건의함 -->
+                <div onclick="showScreen('suggestion')" class="bg-white rounded-2xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center icon-box">
+                                <span class="text-green-600">💡</span>
+                            </div>
+                            <div>
+                                <span class="text-lg font-semibold text-slate-800">식품안전 및 품질개선 건의함</span>
+                                <p class="text-sm text-slate-500">개선사항 제안하기</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <!-- 설정 -->
+                <div onclick="showScreen('settings')" class="bg-white rounded-2xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center icon-box">
+                                <span class="text-purple-600">⚙️</span>
+                            </div>
+                            <div>
+                                <span class="text-lg font-semibold text-slate-800">설정</span>
+                                <p class="text-sm text-slate-500">프로필 및 앱 설정</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <!-- 관리자 전용 사용자 관리 -->
+                <div id="userManagementMenu" onclick="showScreen('userManagement')" class="hidden bg-white rounded-2xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-orange-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center icon-box">
+                                <span class="text-orange-600">👥</span>
+                            </div>
+                            <div>
+                                <span class="text-lg font-semibold text-slate-800">사용자 관리</span>
+                                <p class="text-sm text-slate-500">진도 현황 및 퀴즈 점수 확인</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">관리자</span>
+                            <span class="text-slate-400 text-xl">›</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 월별교육 화면 -->
+    <div id="educationScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-4 px-6 flex items-center justify-between">
+            <div class="flex items-center">
+                <button onclick="showScreen('main')" class="mr-4 text-white hover:text-slate-200 transition-colors text-2xl">←</button>
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">📅</span>
+                    <h1 class="text-2xl font-bold">월별교육</h1>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4" id="educationList">
+                <!-- 교육 목록이 여기에 동적으로 생성됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지사항 화면 -->
+    <div id="noticeScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-4 px-6 flex items-center justify-between">
+            <div class="flex items-center">
+                <button onclick="showScreen('main')" class="mr-4 text-white hover:text-slate-200 transition-colors text-2xl">←</button>
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">📢</span>
+                    <h1 class="text-2xl font-bold">공지사항</h1>
+                </div>
+            </div>
+            <button id="writeNoticeBtn" onclick="toggleNoticeForm()" class="hidden bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-colors">
+                작성
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <!-- 공지사항 작성 폼 -->
+            <div id="noticeForm" class="hidden bg-white rounded-2xl shadow-md p-6 mb-6 border border-slate-100">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">공지사항 작성</h3>
+                <input
+                    id="noticeTitle"
+                    type="text"
+                    placeholder="제목을 입력하세요"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-800 bg-white focus:border-blue-400 focus:outline-none transition-colors mb-4"
+                />
+                <textarea
+                    id="noticeContent"
+                    placeholder="내용을 입력하세요"
+                    rows="4"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-800 bg-white focus:border-blue-400 focus:outline-none transition-colors mb-4"
+                ></textarea>
+                <button
+                    onclick="addNotice()"
+                    class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all"
+                >
+                    등록
+                </button>
+            </div>
+
+            <div id="noticeList">
+                <div class="bg-white rounded-2xl shadow-md p-8 text-center border border-slate-100">
+                    <span class="text-5xl mb-4 block">📢</span>
+                    <span class="text-slate-500 text-lg">공지사항이 없습니다.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 건의함 화면 -->
+    <div id="suggestionScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-4 px-6 flex items-center">
+            <button onclick="showScreen('main')" class="mr-4 text-white hover:text-slate-200 transition-colors text-2xl">←</button>
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">💡</span>
+                <h1 class="text-2xl font-bold">식품안전 및 품질개선 건의함</h1>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="bg-white rounded-2xl shadow-md p-8 text-center border border-slate-100">
+                <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <span class="text-3xl">📝</span>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">건의사항을 작성해주세요</h3>
+                <p class="text-slate-500 mb-6">Google Form을 통해 건의사항을 제출하실 수 있습니다.</p>
+                <button
+                    onclick="openGoogleForm()"
+                    class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 mx-auto"
+                >
+                    <span class="text-xl">🔗</span>
+                    <span>건의함 열기</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 화면 -->
+    <div id="settingsScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-4 px-6 flex items-center">
+            <button onclick="showScreen('main')" class="mr-4 text-white hover:text-slate-200 transition-colors text-2xl">←</button>
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">⚙️</span>
+                <h1 class="text-2xl font-bold">설정</h1>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4">
+                <div class="bg-white rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-all duration-200 border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                                <span class="text-xl">👤</span>
+                            </div>
+                            <span class="text-lg font-medium text-slate-800">내 프로필</span>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-all duration-200 border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl flex items-center justify-center">
+                                <span class="text-xl">🔔</span>
+                            </div>
+                            <span class="text-lg font-medium text-slate-800">알림설정</span>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-all duration-200 border border-slate-100" onclick="handleLogout()">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                                <span class="text-xl">🚪</span>
+                            </div>
+                            <span class="text-lg font-medium text-slate-800">로그아웃</span>
+                        </div>
+                        <span class="text-slate-400 text-xl">›</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 관리 화면 (관리자 전용) -->
+    <div id="userManagementScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="bg-gradient-to-r from-slate-700 to-blue-700 text-white py-4 px-6 flex items-center">
+            <button onclick="showScreen('main')" class="mr-4 text-white hover:text-slate-200 transition-colors text-2xl">←</button>
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">👥</span>
+                <h1 class="text-2xl font-bold">사용자 관리</h1>
+                <span class="text-sm bg-white bg-opacity-20 px-2 py-1 rounded">관리자 전용</span>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div id="userProgressList" class="grid grid-cols-1 gap-4">
+                <!-- 사용자 진도 목록이 여기에 동적으로 생성됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 퀴즈 모달 -->
+    <div id="quizModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <span class="text-3xl">❓</span>
+                    </div>
+                    <h3 id="quizTitle" class="text-xl font-semibold text-slate-800 mb-2">2025년 07월 교육 자료 시험 문제</h3>
+                    <div id="quizScore" class="hidden text-lg font-bold"></div>
+                </div>
+                
+                <div id="quizQuestions" class="space-y-6">
+                    <!-- 퀴즈 문제들이 여기에 동적으로 생성됩니다 -->
+                </div>
+                
+                <div class="flex space-x-3 mt-6">
+                    <button onclick="closeQuiz()" class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                        <span id="quizCloseText">취소</span>
+                    </button>
+                    <button id="submitQuizBtn" onclick="submitQuiz()" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        제출하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 서명 모달 -->
+    <div id="signatureModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <span class="text-3xl">✍️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-2">교육 완료 서명</h3>
+                    <p id="signatureModalText" class="text-sm text-slate-600">교육을 완료하였음을 확인합니다.</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">서명 (이름을 입력해주세요)</label>
+                    <input
+                        id="signatureInput"
+                        type="text"
+                        placeholder="홍길동"
+                        class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-800 bg-white focus:border-green-400 focus:outline-none transition-colors text-center text-lg font-medium"
+                    />
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="closeSignatureModal()" class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                        취소
+                    </button>
+                    <button onclick="saveSignature()" class="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all">
+                        서명 완료
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentUser = null;
+        let isAdmin = false;
+        let notices = [];
+        let signatures = {};
+        let currentQuiz = null;
+        let userAnswers = {};
+        let quizSubmitted = false;
+        let currentSignatureMonth = null;
+
+        // 관리자 계정
+        const adminAccounts = {
+            'K2020004': { name: '송서현' },
+            'K2024010': { name: '김지완' }
+        };
+
+        // 퀴즈 데이터
+        const quizData = {
+            7: {
+                title: '2025년 07월 교육 자료 시험 문제',
+                questions: [
+                    {
+                        id: 1,
+                        question: '세척이 미흡하더라도 강력한 소독제 사용만으로 식중독균을 살멸시킬 수 있다.',
+                        type: 'ox',
+                        options: ['O', 'X'],
+                        correctAnswer: 1,
+                        explanation: '세척이 우선되어야 하며, 소독제만으로는 불충분합니다.'
+                    },
+                    {
+                        id: 2,
+                        question: '세척·소독제 사용 시 주의사항에 대한 설명 중 바르지 않은 것은?',
+                        type: 'multiple',
+                        options: [
+                            '소독제의 희석액 제조 시, 다른 살균소독제와 혼합하여 소독효과성을 높인다.',
+                            '반드시 세척제 및 소독제는 식약처 허가를 받은 제품만을 사용한다.',
+                            '소독제 희석액은 즉시 사용하고 남은 희석액을 폐기한다.',
+                            '신체에 소독제 원액 등이 묻지 않도록 마스크 등 개인 보호장비를 착용 후 사용한다.'
+                        ],
+                        correctAnswer: 0,
+                        explanation: '다른 살균소독제와 혼합하면 위험할 수 있으므로 혼합하지 않아야 합니다.'
+                    },
+                    {
+                        id: 3,
+                        question: '세척제가 잔류하지 않도록 음용에 적합한 물로 충분히 헹군 후 건조시켜야 한다.',
+                        type: 'ox',
+                        options: ['O', 'X'],
+                        correctAnswer: 0,
+                        explanation: '세척제 잔류를 방지하기 위해 충분한 헹굼과 건조가 필요합니다.'
+                    },
+                    {
+                        id: 4,
+                        question: '바닥용, 작업대용, 설비용 등 용도별로 구분하여 사용하며, 절대 겸용하여 사용하지 않는다.',
+                        type: 'ox',
+                        options: ['O', 'X'],
+                        correctAnswer: 0,
+                        explanation: '교차오염 방지를 위해 용도별로 구분하여 사용해야 합니다.'
+                    }
+                ]
+            }
+        };
+
+        // 교육 데이터 생성
+        function generateEducationData() {
+            const currentYear = 2025;
+            const months = [];
+            for (let i = 1; i <= 12; i++) {
+                const monthStr = i.toString().padStart(2, '0');
+                const allCompleted = Math.random() > 0.3;
+                months.push({
+                    id: i,
+                    title: `${currentYear}년 ${monthStr}월 교육`,
+                    items: [
+                        { id: 1, title: `${currentYear}년 ${monthStr}월 교육내용`, type: 'content', completed: allCompleted },
+                        { id: 2, title: `${currentYear}년 ${monthStr}월 퀴즈`, type: 'quiz', completed: allCompleted }
+                    ],
+                    allCompleted: allCompleted
+                });
+            }
+            return months;
+        }
+
+        const educationData = generateEducationData();
+
+        // 로그인 처리
+        function handleLogin() {
+            const employeeId = document.getElementById('employeeId').value;
+            const password = document.getElementById('password').value;
+            
+            if (employeeId && password) {
+                currentUser = employeeId;
+                if (adminAccounts[employeeId]) {
+                    isAdmin = true;
+                    document.getElementById('adminMode').classList.remove('hidden');
+                    document.getElementById('userManagementMenu').classList.remove('hidden');
+                    document.getElementById('writeNoticeBtn').classList.remove('hidden');
+                }
+                showScreen('main');
+            }
+        }
+
+        // 로그아웃 처리
+        function handleLogout() {
+            currentUser = null;
+            isAdmin = false;
+            notices = [];
+            signatures = {};
+            document.getElementById('employeeId').value = '';
+            document.getElementById('password').value = '';
+            showScreen('login');
+        }
+
+        // 화면 전환
+        function showScreen(screenName) {
+            // 모든 화면 숨기기
+            const screens = ['loginScreen', 'mainScreen', 'educationScreen', 'noticeScreen', 'suggestionScreen', 'settingsScreen', 'userManagementScreen'];
+            screens.forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+            
+            // 선택된 화면 보이기
+            if (screenName === 'login') {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            } else if (screenName === 'main') {
+                document.getElementById('mainScreen').classList.remove('hidden');
+            } else if (screenName === 'education') {
+                document.getElementById('educationScreen').classList.remove('hidden');
+                renderEducationList();
+            } else if (screenName === 'notice') {
+                document.getElementById('noticeScreen').classList.remove('hidden');
+                renderNoticeList();
+            } else if (screenName === 'suggestion') {
+                document.getElementById('suggestionScreen').classList.remove('hidden');
+            } else if (screenName === 'settings') {
+                document.getElementById('settingsScreen').classList.remove('hidden');
+            } else if (screenName === 'userManagement' && isAdmin) {
+                document.getElementById('userManagementScreen').classList.remove('hidden');
+                renderUserProgress();
+            }
+        }
+
+        // 월별 교육 토글
+        function toggleMonth(monthId) {
+            const content = document.getElementById(`month-content-${monthId}`);
+            const chevron = document.getElementById(`chevron-${monthId}`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.style.transform = 'rotate(90deg)';
+            } else {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // 퀴즈 시작
+        function startQuiz(monthId) {
+            currentQuiz = monthId;
+            userAnswers = {};
+            quizSubmitted = false;
+            
+            document.getElementById('quizTitle').textContent = quizData[monthId]?.title || `2025년 ${String(monthId).padStart(2, '0')}월 교육 자료 시험 문제`;
+            document.getElementById('quizScore').classList.add('hidden');
+            document.getElementById('submitQuizBtn').disabled = false;
+            document.getElementById('submitQuizBtn').textContent = '제출하기';
+            document.getElementById('quizCloseText').textContent = '취소';
+            
+            renderQuiz(monthId);
+            document.getElementById('quizModal').classList.remove('hidden');
+        }
+
+        // 퀴즈 답안 선택
+        function selectAnswer(questionId, answerIndex) {
+            if (quizSubmitted) return;
+            
+            userAnswers[questionId] = answerIndex;
+            
+            // 선택된 옵션 스타일 업데이트
+            const options = document.querySelectorAll(`[id^="option-${questionId}-"]`);
+            options.forEach((option, index) => {
+                if (index === answerIndex) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+
+        // 퀴즈 제출
+        function submitQuiz() {
+            if (quizSubmitted) return;
+            
+            const quiz = quizData[currentQuiz];
+            if (!quiz) return;
+            
+            let correctCount = 0;
+            
+            quiz.questions.forEach(question => {
+                const userAnswer = userAnswers[question.id];
+                const isCorrect = userAnswer === question.correctAnswer;
+                
+                if (isCorrect) correctCount++;
+                
+                // 정답 표시
+                const options = document.querySelectorAll(`[id^="option-${question.id}-"]`);
+                options.forEach((option, index) => {
+                    option.classList.remove('selected');
+                    if (index === question.correctAnswer) {
+                        option.classList.add('correct');
+                    } else if (index === userAnswer && !isCorrect) {
+                        option.classList.add('wrong');
+                    }
+                });
+                
+                // 해설 표시
+                document.getElementById(`explanation-${question.id}`).classList.remove('hidden');
+            });
+            
+            // 점수 표시
+            const score = Math.round((correctCount / quiz.questions.length) * 100);
+            document.getElementById('quizScore').textContent = `점수: ${score}점 (${correctCount}/${quiz.questions.length}문제 정답)`;
+            document.getElementById('quizScore').classList.remove('hidden');
+            
+            // 버튼 상태 변경
+            document.getElementById('submitQuizBtn').disabled = true;
+            document.getElementById('submitQuizBtn').textContent = '제출 완료';
+            document.getElementById('quizCloseText').textContent = '닫기';
+            
+            quizSubmitted = true;
+            
+            // 교육 완료 상태 업데이트
+            const monthData = educationData.find(m => m.id === currentQuiz);
+            if (monthData) {
+                monthData.items.forEach(item => item.completed = true);
+                monthData.allCompleted = true;
+            }
+        }
+
+        // 퀴즈 닫기
+        function closeQuiz() {
+            document.getElementById('quizModal').classList.add('hidden');
+            if (quizSubmitted) {
+                renderEducationList();
+            }
+        }
+
+        // 서명 모달 열기
+        function openSignatureModal(monthId) {
+            currentSignatureMonth = monthId;
+            document.getElementById('signatureInput').value = '';
+            document.getElementById('signatureModal').classList.remove('hidden');
+        }
+
+        // 서명 모달 닫기
+        function closeSignatureModal() {
+            document.getElementById('signatureModal').classList.add('hidden');
+        }
+
+        // 서명 저장
+        function saveSignature() {
+            const signature = document.getElementById('signatureInput').value.trim();
+            
+            if (!signature) {
+                alert('서명을 입력해주세요.');
+                return;
+            }
+            
+            const now = new Date();
+            signatures[currentSignatureMonth] = {
+                signature: signature,
+                employeeId: currentUser,
+                employeeName: adminAccounts[currentUser]?.name || '일반사용자',
+                date: now.toLocaleDateString('ko-KR'),
+                time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            closeSignatureModal();
+            renderEducationList();
+        }
+
+        // 수료증 다운로드
+        function downloadCertificate(monthId) {
+            alert(`${monthId}월 수료증 다운로드 기능은 준비 중입니다.`);
+        }
+
+        // Google Form 열기
+        function openGoogleForm() {
+            window.open('https://forms.google.com', '_blank');
+        }
+
+        // 공지사항 토글
+        function toggleNoticeForm() {
+            const form = document.getElementById('noticeForm');
+            form.classList.toggle('hidden');
+        }
+
+        // 공지사항 추가
+        function addNotice() {
+            const title = document.getElementById('noticeTitle').value.trim();
+            const content = document.getElementById('noticeContent').value.trim();
+            
+            if (!title || !content) {
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+            
+            notices.unshift({
+                id: Date.now(),
+                title: title,
+                content: content,
+                author: adminAccounts[currentUser]?.name || '관리자',
+                date: new Date().toLocaleDateString('ko-KR')
+            });
+            
+            document.getElementById('noticeTitle').value = '';
+            document.getElementById('noticeContent').value = '';
+            toggleNoticeForm();
+            renderNoticeList();
+        }
+
+        // 공지사항 목록 렌더링
+        function renderNoticeList() {
+            const container = document.getElementById('noticeList');
+            
+            if (notices.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-md p-8 text-center border border-slate-100">
+                        <span class="text-5xl mb-4 block">📢</span>
+                        <span class="text-slate-500 text-lg">공지사항이 없습니다.</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notices.map(notice => `
+                <div class="bg-white rounded-2xl shadow-md p-6 mb-4 border border-slate-100">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-2">${notice.title}</h3>
+                    <p class="text-slate-600 mb-3">${notice.content}</p>
+                    <div class="flex items-center justify-between text-sm text-slate-500">
+                        <span>${notice.author}</span>
+                        <span>${notice.date}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 사용자 진도 렌더링 (관리자용)
+        function renderUserProgress() {
+            const container = document.getElementById('userProgressList');
+            
+            // 샘플 사용자 데이터
+            const users = [
+                { id: 'K2024001', name: '김철수', progress: 75, quizScore: 85 },
+                { id: 'K2024002', name: '이영희', progress: 100, quizScore: 95 },
+                { id: 'K2024003', name: '박민수', progress: 50, quizScore: 70 },
+                { id: 'K2024004', name: '정수진', progress: 90, quizScore: 88 }
+            ];
+            
+            container.innerHTML = users.map(user => `
+                <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-800">${user.name}</h3>
+                            <p class="text-sm text-slate-500">${user.id}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-slate-600">퀴즈 평균</p>
+                            <p class="text-2xl font-bold text-blue-600">${user.quizScore}점</p>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="text-slate-600">교육 진도</span>
+                            <span class="font-medium text-slate-800">${user.progress}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style="width: ${user.progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 모든 파일 저장 (관리자용)
+        function saveAllFiles() {
+            alert('데이터 저장 기능은 준비 중입니다.');
+        }
+
+        // Enter 키로 로그인
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const employeeIdInput = document.getElementById('employeeId');
+            
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            employeeIdInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    passwordInput.focus();
+                }
+            });
+        });
